@@ -1,6 +1,6 @@
 # 📖 08.13 AWS
 ### iamusertest1 VPC 생성, 삭제, 조회 권한 부여
-```
+```bash
 {
 	"Version": "2012-10-17",
 	"Statement": [
