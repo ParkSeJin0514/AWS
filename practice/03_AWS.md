@@ -38,7 +38,7 @@ set -Eeuo pipefail
 
 # 설정
 LOG_DIR="/var/log/mylogs"                  # collector와 동일
-BUCKET="s3://sample-psj-s3"                # 버킷 루트
+BUCKET="s3://sample-psj-s3/logs"                # 버킷 루트
 AWS_REGION="ap-northeast-2"
 AWS_CLI="/usr/bin/aws"
 CURL="/usr/bin/curl"
