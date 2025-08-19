@@ -1,6 +1,6 @@
 # 📗 08.19 AWS
 ## *.log 파일 S3에 자동 적재
-### 0. UTC -> KST
+### 0. UTC -> KST 타임존 변경
 ```bash
 sudo timedatectl set-timezone Asia/Seoul
 timedatectl
@@ -49,23 +49,32 @@ notify_slack() {
     --data "{\"text\":\"${msg}\"}" "$SLACK_WEBHOOK" >/dev/null || true
 }
 
-PREV_MINUTE="$(date -d '1 minute ago' +%Y%m%d-%H%M)"
-file="$LOG_DIR/$PREV_MINUTE.log"
-[ -f "$file" ] || exit 0
-filename="$(basename "$file")"
+# 현재 분 파일은 작성 중일 수 있으므로 제외
+CUR_MINUTE="$(date +%Y%m%d-%H%M)"
 
-n=0
-until [ $n -ge 3 ]; do
-  if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION" --only-show-errors; then
-    rm -f "$file"
-    notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
-    exit 0
+shopt -s nullglob
+for file in "$LOG_DIR"/*.log; do
+  filename="$(basename "$file")"
+  
+  # 현재 분 로그는 건너뜀
+  [[ "$filename" == "$CUR_MINUTE.log" ]] && continue
+
+  n=0
+  until [ $n -ge 3 ]; do
+    if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION" --only-show-errors; then
+      rm -f "$file"
+      notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
+      break
+    fi
+    n=$((n+1))
+    sleep 5
+  done
+
+  if [ $n -ge 3 ]; then
+    echo "$filename 파일 s3 업로드에 실패했습니다."
+    notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
   fi
-  n=$((n+1)); sleep 5
 done
-
-echo "$filename 파일 s3 업로드에 실패했습니다."
-notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
 ```
 - 권한 부여
 ```bash
