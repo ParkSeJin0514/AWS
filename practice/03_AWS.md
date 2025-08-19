@@ -60,7 +60,7 @@ files=("$LOG_DIR"/*.log)
 
 # 대상이 없으면 안내만 하고 종료
 if [ ${#files[@]} -eq 0 ]; then
-  notify_slack "ℹ️ 업로드할 로그 파일이 없습니다. (경로: $LOG_DIR)"
+  notify_slack "ℹ️ 업로드할 로그 파일이 없습니다. (경로 : $LOG_DIR)"
   exit 0
 fi
 
@@ -90,7 +90,7 @@ for file in "${files[@]}"; do
     if [ -n "${last_err:-}" ]; then
       # 너무 길면 슬랙이 자를 수 있어 앞부분만 보냄
       short_err="$(echo "$last_err" | head -c 500)"
-      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러: $short_err"
+      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러 : $short_err"
     else
       notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
     fi
