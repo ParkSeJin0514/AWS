@@ -1,11 +1,11 @@
 # 📗 08.19 AWS
 ## 로그 파일 S3에 자동 적재
-### 0. UTC -> KST 타임존 변경
+### 1. UTC -> KST 타임존 변경
 ```bash
 sudo timedatectl set-timezone Asia/Seoul
 timedatectl
 ```
-### 1. 로그 수집 스크립트 : /home/ec2-user/log_collector.sh
+### 2. 로그 수집 스크립트 : /home/ec2-user/log_collector.sh
 ```bash
 #!/bin/bash
 LOG_DIR="/var/log/mylogs"
@@ -31,7 +31,7 @@ sudo chown ec2-user:ec2-user /var/log/mylogs
 chmod +x /home/ec2-user/log_collector.sh
 ```
 ---
-### 2. 로그 업로드 스크립트 + Slack 알림 : `/home/ec2-user/log_uploader.sh`
+### 3. 로그 업로드 스크립트 + Slack 알림 : `/home/ec2-user/log_uploader.sh`
 ```bash
 #!/bin/bash
 set -Eeuo pipefail
@@ -102,12 +102,12 @@ done
 chmod +x /home/ec2-user/log_uploader.sh
 ```
 ---
-### 3. user systemd 유닛 파일 경로 : `~/.config/systemd/user/`
+### 4. user systemd 유닛 파일 경로 : `~/.config/systemd/user/`
 - 경로 생성
 ```bash
 mkdir -p /home/ec2-user/.config/systemd/user
 ```
-### 3-1. 수집기 서비스 : `~/.config/systemd/user/log_collector.service`
+### 4-1. 수집기 서비스 : `~/.config/systemd/user/log_collector.service`
 ```bash
 [Unit]
 Description=Log Collector Service
@@ -120,7 +120,7 @@ Restart=always
 [Install]
 WantedBy=default.target
 ```
-### 3-2. 업로더 서비스 : `~/.config/systemd/user/log_uploader.service`
+### 4-2. 업로더 서비스 : `~/.config/systemd/user/log_uploader.service`
 ```bash
 [Unit]
 Description=Log Uploader Service
@@ -129,7 +129,7 @@ Description=Log Uploader Service
 Type=oneshot
 ExecStart=/home/ec2-user/log_uploader.sh
 ```
-### 3-3. 업로더 타이머 : `~/.config/systemd/user/log_uploader.timer`
+### 4-3. 업로더 타이머 : `~/.config/systemd/user/log_uploader.timer`
 ```bash
 [Unit]
 Description=Run log uploader every 1 minute
@@ -142,7 +142,7 @@ Persistent=true
 WantedBy=timers.target
 ```
 ---
-### 4. systemd 활성화 : user 모드
+### 5. systemd 활성화 : user 모드
 ```bash
 systemctl --user daemon-reload
 systemctl --user enable --now log_collector.service
@@ -153,7 +153,7 @@ systemctl --user enable --now log_uploader.timer
 sudo loginctl enable-linger ec2-user
 ```
 ---
-### 5. 확인 방법
+### 6. 확인 방법
 ```bash
 # 수집기 상태
 systemctl --user status log_collector.service
@@ -171,7 +171,7 @@ journalctl --user -u log_uploader.service -n 50 --no-pager
 aws s3 ls s3://sample-psj-s3/ --region ap-northeast-2
 ```
 ---
-### 6. 멈추기 · 재시작
+### 7. 멈추기 · 재시작
 ```bash
 # 멈춤
 systemctl --user stop log_collector.service
@@ -182,7 +182,7 @@ systemctl --user restart log_collector.service
 systemctl --user restart log_uploader.timer
 ```
 ---
-### 7. 네트워크 · 권한 점검 팁
+### 8. 네트워크 · 권한 점검 팁
 - 네트워크 : `curl -I https://s3.ap-northeast-2.amazonaws.com` 가 응답해야 함
 - IAM 최소 권한 : `s3:ListBucket` on `arn:aws:s3:::sample-psj-s3`, `s3:PutObject` on `arn:aws:s3:::sample-psj-s3/*`
 - systemd 환경 차이 방지 : `/usr/bin/aws`, `/usr/bin/curl` 절대경로와 `-region ap-northeast-2` 사용
