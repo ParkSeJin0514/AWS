@@ -36,33 +36,47 @@ chmod +x /home/ec2-user/log_collector.sh
 #!/bin/bash
 set -Eeuo pipefail
 
-LOG_DIR="/var/log/mylogs"
-BUCKET="s3://sample-psj-s3/logs"
+# 설정
+LOG_DIR="/var/log/mylogs"                  # collector와 동일
+BUCKET="s3://sample-psj-s3"                # 버킷 루트
+AWS_REGION="ap-northeast-2"
 AWS_CLI="/usr/bin/aws"
 CURL="/usr/bin/curl"
-AWS_REGION="ap-northeast-2"
 SLACK_WEBHOOK="Slack URL"
 
 notify_slack() {
   local msg="$1"
   $CURL -s -X POST -H 'Content-type: application/json' \
-    --data "{\"text\":\"${msg}\"}" "$SLACK_WEBHOOK" >/dev/null || true
+    --data "{\"text\":\"${msg}\"}" \
+    "$SLACK_WEBHOOK" >/dev/null || true
 }
 
-# 현재 분 파일은 작성 중일 수 있으므로 제외
-CUR_MINUTE="$(date +%Y%m%d-%H%M)"
+# 현재 분 파일은 작성 중일 수 있으니 제외
+CUR_MINUTE="$(TZ='Asia/Seoul' date +%Y%m%d-%H%M)"
 
+# 업로드 대상 수집
 shopt -s nullglob
-for file in "$LOG_DIR"/*.log; do
+files=("$LOG_DIR"/*.log)
+
+# 대상이 없으면 안내만 하고 종료
+if [ ${#files[@]} -eq 0 ]; then
+  notify_slack "ℹ️ 업로드할 로그 파일이 없습니다. (경로: $LOG_DIR)"
+  exit 0
+fi
+
+for file in "${files[@]}"; do
+  [ -f "$file" ] || continue
   filename="$(basename "$file")"
-  
-  # 현재 분 로그는 건너뜀
+
+  # 현재 분 파일은 건너뜀
   [[ "$filename" == "$CUR_MINUTE.log" ]] && continue
 
+  # 3회 재시도 업로드
   n=0
+  last_err=""
   until [ $n -ge 3 ]; do
-    if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION" --only-show-errors; then
-      rm -f "$file"
+    if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION" --only-show-errors 2> >(last_err=$(cat); typeset -p last_err >/dev/null); then
+      rm -f "$file" || true
       notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
       break
     fi
@@ -72,7 +86,14 @@ for file in "$LOG_DIR"/*.log; do
 
   if [ $n -ge 3 ]; then
     echo "$filename 파일 s3 업로드에 실패했습니다."
-    notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
+    # 에러 메시지가 있으면 함께 전송
+    if [ -n "${last_err:-}" ]; then
+      # 너무 길면 슬랙이 자를 수 있어 앞부분만 보냄
+      short_err="$(echo "$last_err" | head -c 500)"
+      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러: $short_err"
+    else
+      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
+    fi
   fi
 done
 ```
