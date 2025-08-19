@@ -135,7 +135,7 @@ ExecStart=/home/ec2-user/log_uploader.sh
 Description=Run log uploader every 1 minute
 
 [Timer]
-OnCalendar=*:0/1
+OnCalendar=*:0/1  # 5분마다 업로드 설정 시 *:0/5
 Persistent=true
 
 [Install]
