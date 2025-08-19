@@ -1,5 +1,5 @@
 # 📗 08.19 AWS
-## *.log 파일 S3에 자동 적재
+## 로그 파일 S3에 자동 적재
 ### 0. UTC -> KST 타임존 변경
 ```bash
 sudo timedatectl set-timezone Asia/Seoul
