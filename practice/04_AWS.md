@@ -1,4 +1,4 @@
-# 📗 08.19 AWS
+# 📗 08.20 AWS
 ## CloudWatch를 활용해 서버 상태 Slack으로 알림
 ### 1. SNS 주제 생성
 
