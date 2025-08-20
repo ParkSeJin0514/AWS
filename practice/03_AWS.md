@@ -181,8 +181,7 @@ systemctl --user restart log_uploader.timer
 - 네트워크 : `curl -I https://s3.ap-northeast-2.amazonaws.com` 가 응답해야 함
 - IAM 최소 권한 : `s3:ListBucket` on `arn:aws:s3:::sample-psj-s3`, `s3:PutObject` on `arn:aws:s3:::sample-psj-s3/*`
 - systemd 환경 차이 방지 : `/usr/bin/aws`, `/usr/bin/curl` 절대경로와 `-region ap-northeast-2` 사용
-## 📊 결과 확인
-- 박세진 노션 : [PSJ REPOSITORY](https://psjrepository.notion.site/DAY-25-2543d86ddbdc80568b83fef67c889168)
+
 ## 💎 개선 사항 정리
 ### UTC로 로그 파일이 생성되어 KST로 타임존 수정
 ```bash
@@ -231,3 +230,5 @@ for file in "$LOG_DIR"/*.log; do
     notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
   ...
 ```
+## 📊 결과 확인
+- 박세진 노션 : [PSJ REPOSITORY](https://psjrepository.notion.site/DAY-25-2543d86ddbdc80568b83fef67c889168)
