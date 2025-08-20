@@ -190,17 +190,10 @@ timedatectl
 ```
 ### log_uploader.sh / 추가 : 로그 파일이 없으면 로그 없음 출력
 ```bash
-shopt -s nullglob
-files=("$LOG_DIR"/*.log)
-
 if [ ${#files[@]} -eq 0 ]; then
-  notify_slack "ℹ️ 업로드할 로그 파일이 없습니다."
+  notify_slack "ℹ️ 업로드할 로그 파일이 없습니다. (경로 : $LOG_DIR)"
   exit 0
 fi
-
-for file in "${files[@]}"; do
-  ...
-done
 ```
 ### log_uploader.sh / 기존 : 직전 1분 .log 파일 업로드 코드
 ```bash
