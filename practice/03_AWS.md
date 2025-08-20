@@ -30,7 +30,6 @@ sudo mkdir -p /var/log/mylogs
 sudo chown ec2-user:ec2-user /var/log/mylogs
 chmod +x /home/ec2-user/log_collector.sh
 ```
----
 ### 3. 로그 업로드 스크립트 + Slack 알림 : `/home/ec2-user/log_uploader.sh`
 ```bash
 #!/bin/bash
@@ -101,7 +100,6 @@ done
 ```bash
 chmod +x /home/ec2-user/log_uploader.sh
 ```
----
 ### 4. user systemd 유닛 파일 경로 : `~/.config/systemd/user/`
 - 경로 생성
 ```bash
@@ -141,7 +139,6 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 ```
----
 ### 5. systemd 활성화 : user 모드
 ```bash
 systemctl --user daemon-reload
@@ -152,7 +149,6 @@ systemctl --user enable --now log_uploader.timer
 ```bash
 sudo loginctl enable-linger ec2-user
 ```
----
 ### 6. 확인 방법
 ```bash
 # 수집기 상태
@@ -170,7 +166,6 @@ journalctl --user -u log_uploader.service -n 50 --no-pager
 # S3 업로드 확인
 aws s3 ls s3://sample-psj-s3/ --region ap-northeast-2
 ```
----
 ### 7. 멈추기 · 재시작
 ```bash
 # 멈춤
@@ -181,13 +176,18 @@ systemctl --user stop log_uploader.timer
 systemctl --user restart log_collector.service
 systemctl --user restart log_uploader.timer
 ```
----
+
 ### 8. 네트워크 · 권한 점검 팁
 - 네트워크 : `curl -I https://s3.ap-northeast-2.amazonaws.com` 가 응답해야 함
 - IAM 최소 권한 : `s3:ListBucket` on `arn:aws:s3:::sample-psj-s3`, `s3:PutObject` on `arn:aws:s3:::sample-psj-s3/*`
 - systemd 환경 차이 방지 : `/usr/bin/aws`, `/usr/bin/curl` 절대경로와 `-region ap-northeast-2` 사용
-
+---
 ## 💎 개선 사항 정리
+### UTC로 로그 파일이 생성되어 KST로 타임존 수정
+```bash
+sudo timedatectl set-timezone Asia/Seoul
+timedatectl
+```
 ### log_uploader.sh / 추가 : 로그 파일이 없으면 로그 없음 출력
 ```bash
 shopt -s nullglob
