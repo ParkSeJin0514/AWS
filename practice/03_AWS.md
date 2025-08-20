@@ -204,7 +204,7 @@ for file in "${files[@]}"; do
   ...
 done
 ```
-### log_uploader.sh / 기존 : 직전 1분 파일만 업로드 코드
+### log_uploader.sh / 기존 : 직전 1분 .log 파일 업로드 코드
 ```bash
 PREV_MINUTE="$(date -d '1 minute ago' +%Y%m%d-%H%M)"
 file="$LOG_DIR/$PREV_MINUTE.log"
@@ -214,7 +214,7 @@ filename="$(basename "$file")"
 aws s3 cp "$file" "$BUCKET/$filename"
 ...
 ```
-### log_uploader.sh / 개선 : 누락된 모든 .log 업로드 코드
+### log_uploader.sh / 개선 : 누락된 모든 .log 파일 업로드 코드
 ```bash
 # 현재 분은 아직 쓰고 있으니 제외
 CUR_MINUTE="$(date +%Y%m%d-%H%M)"
