@@ -1,5 +1,5 @@
 # 📗 08.19 AWS
-## 로그 파일 S3에 자동 적재
+## 📚 로그 파일 S3에 자동 적재
 ### 1. UTC -> KST 타임존 변경
 ```bash
 sudo timedatectl set-timezone Asia/Seoul
@@ -77,7 +77,7 @@ for file in "${files[@]}"; do
   until [ $n -ge 3 ]; do
     if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION" --only-show-errors 2> >(last_err=$(cat); typeset -p last_err >/dev/null); then
       rm -f "$file" || true
-      notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
+      notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3/logs"
       break
     fi
     n=$((n+1))
@@ -186,3 +186,47 @@ systemctl --user restart log_uploader.timer
 - 네트워크 : `curl -I https://s3.ap-northeast-2.amazonaws.com` 가 응답해야 함
 - IAM 최소 권한 : `s3:ListBucket` on `arn:aws:s3:::sample-psj-s3`, `s3:PutObject` on `arn:aws:s3:::sample-psj-s3/*`
 - systemd 환경 차이 방지 : `/usr/bin/aws`, `/usr/bin/curl` 절대경로와 `-region ap-northeast-2` 사용
+
+## 💎 개선 사항 정리
+### log_uploader.sh / 추가 : 로그 파일이 없으면 로그 없음 출력
+```bash
+shopt -s nullglob
+files=("$LOG_DIR"/*.log)
+
+if [ ${#files[@]} -eq 0 ]; then
+  notify_slack "ℹ️ 업로드할 로그 파일이 없습니다."
+  exit 0
+fi
+
+for file in "${files[@]}"; do
+  ...
+done
+```
+### log_uploader.sh / 기존 : 직전 1분 파일만 업로드 코드
+```bash
+PREV_MINUTE="$(date -d '1 minute ago' +%Y%m%d-%H%M)"
+file="$LOG_DIR/$PREV_MINUTE.log"
+[ -f "$file" ] || exit 0
+filename="$(basename "$file")"
+...
+aws s3 cp "$file" "$BUCKET/$filename"
+...
+```
+### log_uploader.sh / 개선 : 누락된 모든 .log 업로드 코드
+```bash
+# 현재 분은 아직 쓰고 있으니 제외
+CUR_MINUTE="$(date +%Y%m%d-%H%M)"
+
+shopt -s nullglob
+for file in "$LOG_DIR"/*.log; do
+  filename="$(basename "$file")"
+
+  # 현재 분 파일은 건너뜀
+  [[ "$filename" == "$CUR_MINUTE.log" ]] && continue
+
+  # 업로드 시도
+  if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION"; then
+    rm -f "$file"
+    notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
+  ...
+```
