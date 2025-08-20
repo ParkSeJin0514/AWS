@@ -57,3 +57,5 @@ echo "build complete(ci)"
 java -jar ./build/libs/blog-0.0.1-SNAPSHOT.war
 echo "deploy complete(cd)"
 ```
+## 📊 결과 확인
+- 박세진 노션 : [PSJ REPOSITORY](https://psjrepository.notion.site/DAY-26-2553d86ddbdc80149675d4b760a0a0f1)
