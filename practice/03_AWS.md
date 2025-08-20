@@ -190,6 +190,7 @@ timedatectl
 ```
 ### log_uploader.sh / 추가 : 로그 파일이 없으면 로그 없음 출력
 ```bash
+# 대상이 없으면 안내만 하고 종료
 if [ ${#files[@]} -eq 0 ]; then
   notify_slack "ℹ️ 업로드할 로그 파일이 없습니다. (경로 : $LOG_DIR)"
   exit 0
