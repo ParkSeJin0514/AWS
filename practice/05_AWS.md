@@ -28,6 +28,11 @@ sudo yum install mariadb105 -y
 
 - MySQL 정상 작동 확인
 ```bash
+mysqladmin ping -u admin -p -h database-1.crone748rvgl.ap-northeast-2.rds.amazonaws.com
+```
+
+- MySQL 시작
+```bash
 mysql -h database-1.crone748rvgl.ap-northeast-2.rds.amazonaws.com -P 3306 -u admin -p
 ```
 
