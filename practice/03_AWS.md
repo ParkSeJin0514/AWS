@@ -221,7 +221,7 @@ for file in "$LOG_DIR"/*.log; do
   # 업로드 시도
   if $AWS_CLI s3 cp "$file" "$BUCKET/$filename" --region "$AWS_REGION"; then
     rm -f "$file"
-    notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3"
+    notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3/logs"
   ...
 ```
 ## 📊 결과 확인
