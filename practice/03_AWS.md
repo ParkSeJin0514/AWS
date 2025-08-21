@@ -14,7 +14,7 @@ mkdir -p "$LOG_DIR"    # 폴더 없으면 새로 생성
 
 while true    # 무한 반복 시작
 do
-  # 날짜+시간(년월일-시분)으로 로그 파일 이름 생성
+    # 날짜+시간(년월일-시분)으로 로그 파일 이름 생성
 	LOG_FILE="$LOG_DIR/$(date +%Y%m%d-%H%M).log"
 	# 현재 시각 시:분:초 저장
 	NOW=$(date +"%H:%M:%S")    
