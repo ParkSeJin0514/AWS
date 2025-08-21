@@ -92,12 +92,12 @@ for file in "${files[@]}"; do
     sleep 5                       # 5초 대기 후 재시도
   done
 
-  if [ $n -ge 3 ]; then                                               # 재시도 횟수가 3 이상이면 실패 처리 분기 진입 생성
-    echo "$filename 파일 s3 업로드에 실패했습니다."                     # 콘솔에 업로드 실패 메시지 출력 생성
-    err="${last_err:-에러 메시지 없음}"                                # last_err 가 비었거나 미정의면 기본 문구로 대체해 err 에 저장 생성
-    short_err="$(printf '%s' "$err" | head -c 500)"                   # 에러 내용을 최대 500바이트로 잘라 short_err 에 저장 생성
-    notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러 : $short_err"  # 슬랙으로 실패 알림 메시지 전송 생성
-  fi                                                                  # if 분기 종료 생성
+  if [ $n -ge 3 ]; then                                               # 재시도 횟수가 3 이상이면 if문 실행
+    echo "$filename 파일 s3 업로드에 실패했습니다."                     # 콘솔에 업로드 실패 메시지 출력
+    err="${last_err:-에러 메시지 없음}"                                # last_err 가 비었거나 미정의면 기본 문구로 대체해 err 에 저장
+    short_err="$(printf '%s' "$err" | head -c 500)"                   # 에러 내용을 최대 500바이트로 잘라 short_err 에 저장
+    notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러 : $short_err"  # 슬랙으로 실패 알림 메시지 전송
+  fi                                                                  # if 분기 종료
 done
 ```
 - 권한 부여
