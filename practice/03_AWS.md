@@ -92,17 +92,12 @@ for file in "${files[@]}"; do
     sleep 5                       # 5초 대기 후 재시도
   done
 
-  # 3회 모두 실패한 경우
-  if [ $n -ge 3 ]; then
-    echo "$filename 파일 s3 업로드에 실패했습니다." # 콘솔에 실패 메시지 출력
-    # 에러 메시지가 있다면 슬랙에도 전달
-    if [ -n "${last_err:-}" ]; then
-      short_err="$(echo "$last_err" | head -c 500)"   # 너무 길면 앞부분 500자만 추출
-      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러: $short_err"
-    else
-      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
-    fi
-  fi
+  if [ $n -ge 3 ]; then                                               # 재시도 횟수가 3 이상이면 실패 처리 분기 진입 생성
+    echo "$filename 파일 s3 업로드에 실패했습니다."                     # 콘솔에 업로드 실패 메시지 출력 생성
+    err="${last_err:-에러 메시지 없음}"                                # last_err 가 비었거나 미정의면 기본 문구로 대체해 err 에 저장 생성
+    short_err="$(printf '%s' "$err" | head -c 500)"                   # 에러 내용을 최대 500바이트로 잘라 short_err 에 저장 생성
+    notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러 : $short_err"  # 슬랙으로 실패 알림 메시지 전송 생성
+  fi                                                                  # if 분기 종료 생성
 done
 ```
 - 권한 부여
@@ -215,6 +210,7 @@ filename="$(basename "$file")"
 aws s3 cp "$file" "$BUCKET/$filename"
 ...
 ```
+---
 ### log_uploader.sh / 개선 : 누락된 모든 .log 파일 업로드 코드
 ```bash
 # 현재 분은 아직 쓰고 있으니 제외
@@ -232,6 +228,30 @@ for file in "$LOG_DIR"/*.log; do
     rm -f "$file"
     notify_slack "✅ 업로드 성공 : $filename → sample-psj-s3/logs"
   ...
+```
+---
+### log_uploader.sh / 기존 : else에 Slack 알림을 적음
+```bash
+# 3회 모두 실패한 경우
+  if [ $n -ge 3 ]; then
+    echo "$filename 파일 s3 업로드에 실패했습니다." # 콘솔에 실패 메시지 출력
+    # 에러 메시지가 있다면 슬랙에도 전달
+    if [ -n "${last_err:-}" ]; then
+      short_err="$(echo "$last_err" | head -c 500)"   # 너무 길면 앞부분 500자만 추출
+      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러: $short_err"
+    else
+      notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)"
+    fi
+  fi
+```
+### log_uploader.sh / 개선 : else 를 통합하여 중첩 if 문이 아닌 if 문 하나로 코드 간소화
+```bash
+if [ $n -ge 3 ]; then
+  echo "$filename 파일 s3 업로드에 실패했습니다."
+  err="${last_err:-에러 메시지 없음}"
+  short_err="$(printf '%s' "$err" | head -c 500)"
+  notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러 : $short_err"
+fi
 ```
 ## 📊 결과 확인
 - 박세진 노션 : [PSJ REPOSITORY](https://psjrepository.notion.site/DAY-25-2543d86ddbdc80568b83fef67c889168)
