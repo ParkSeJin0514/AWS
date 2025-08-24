@@ -97,7 +97,7 @@ for file in "${files[@]}"; do
     err="${last_err:-에러 메시지 없음}"                                # last_err 가 비었거나 미정의면 기본 문구로 대체해 err 에 저장
     short_err="$(printf '%s' "$err" | head -c 500)"                   # 에러 내용을 최대 500바이트로 잘라 short_err 에 저장
     notify_slack "❌ 업로드 실패 : $filename (3회 재시도 후 실패)\n에러 : $short_err"  # 슬랙으로 실패 알림 메시지 전송
-  fi                                                                  
+  fi                                                              
 done
 ```
 - 권한 부여
