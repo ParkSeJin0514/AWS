@@ -9,3 +9,4 @@
 - AWS Using RDS For Notice Board : [08.20 AWS RDS](practice/05_AWS.md)
 - AWS Small Project : [08.22 AWS Project](practice/06_AWS.md)
 - AWS Small Project Finshed : [08.26 AWS Project](practice/07_AWS.md)
+- AWS Study For SAA-C03 : [08.27 ~ ing](https://www.notion.so/psjrepository/SAA-2603d86ddbdc80829dbbdf0dea2ba496)
