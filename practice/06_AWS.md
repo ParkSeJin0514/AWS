@@ -1,4 +1,4 @@
-# 📗 08.22 ~ 08.26 AWS
+# 📗 08.22 AWS
 ## 📚 3 Tier Architecture Project
 ### 계획 수립
 - 메인 : 구인정, 박세진, 홍승재
