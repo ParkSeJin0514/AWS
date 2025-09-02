@@ -1,5 +1,5 @@
 # 📗 08.14 AWS
-## 인스턴스 t3.small로 자동화
+### 인스턴스 t3.small로 자동화
 ```bash
 ./change-to-t3-small.sh --instance-id i-09908ba6f81cc8a79 --dry-run
 ./change-to-t3-small.sh --instance-id i-09908ba6f81cc8a79 --force
